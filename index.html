@@ -100,6 +100,14 @@
 
     ::selection { background: #DFA171; color: #0E1626; }
 
+    /* Header hide/show on scroll */
+    #site-header {
+      transition: transform 0.42s cubic-bezier(0.16, 0.84, 0.44, 1);
+    }
+    #site-header.nav-hidden {
+      transform: translateY(-110%);
+    }
+
     /* Custom scrollbar */
     ::-webkit-scrollbar { width: 11px; }
     ::-webkit-scrollbar-track { background: #FBF9F4; }
@@ -111,7 +119,7 @@
 <body class="font-sans text-slate-800 antialiased">
 
   <!-- ============================ NAVIGATION ============================ -->
-  <header id="site-header" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <header id="site-header" class="fixed top-0 inset-x-0 z-50">
     <nav class="max-w-7xl mx-auto px-6 lg:px-10">
       <div id="nav-inner" class="flex items-center justify-between mt-4 rounded-2xl border border-white/10 bg-slate-950/30 backdrop-blur-md px-5 py-3 transition-all duration-500">
         <!-- Logo -->
@@ -598,16 +606,35 @@
     // Current year
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Header shrink + background on scroll
+    // Header: hide on scroll down, reveal on scroll up
+    const header = document.getElementById('site-header');
     const inner = document.getElementById('nav-inner');
+    let lastY = window.scrollY;
+
     const onScroll = () => {
-      if (window.scrollY > 30) {
+      const y = window.scrollY;
+
+      // Solid backdrop once past hero top
+      if (y > 30) {
         inner.classList.add('bg-slate-950/80', 'shadow-lg', 'shadow-slate-950/20');
         inner.classList.remove('bg-slate-950/30');
       } else {
         inner.classList.remove('bg-slate-950/80', 'shadow-lg', 'shadow-slate-950/20');
         inner.classList.add('bg-slate-950/30');
       }
+
+      // Only trigger hide behaviour after scrolling past hero (~100px)
+      if (y > 100) {
+        if (y > lastY + 4) {
+          header.classList.add('nav-hidden');    // scrolling down → pan out
+        } else if (y < lastY - 4) {
+          header.classList.remove('nav-hidden'); // scrolling up → pan in
+        }
+      } else {
+        header.classList.remove('nav-hidden');
+      }
+
+      lastY = y;
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
